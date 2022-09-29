@@ -26,7 +26,7 @@ func SetupDatabaseConnection() *gorm.DB {
 	if err != nil {
 		panic("Failed to create a connection to database")
 	}
-	db.AutoMigrate(&entity.User{})
+	db.AutoMigrate(&entity.Account{}, &entity.User{})
 	return db
 }
 

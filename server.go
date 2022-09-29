@@ -13,13 +13,16 @@ import (
 )
 
 var (
-	db             *gorm.DB                  = config.SetupDatabaseConnection()
-	userRepository repository.UserRepository = repository.NewUserRepository(db)
-	jwtService     service.JWTService        = service.NewJWTService()
-	userService    service.UserService       = service.NewUserService(userRepository)
-	authService    service.AuthService       = service.NewAuthService(userRepository)
-	authController controller.AuthController = controller.NewAuthController(authService, jwtService)
-	userController controller.UserController = controller.NewUserController(userService, jwtService)
+	db                *gorm.DB                     = config.SetupDatabaseConnection()
+	userRepository    repository.UserRepository    = repository.NewUserRepository(db)
+	accountRepository repository.AccountRepository = repository.NewAccountRepository(db)
+	jwtService        service.JWTService           = service.NewJWTService()
+	userService       service.UserService          = service.NewUserService(userRepository)
+	accountService    service.AccountService       = service.NewAccountService(accountRepository)
+	authService       service.AuthService          = service.NewAuthService(userRepository)
+	authController    controller.AuthController    = controller.NewAuthController(authService, jwtService)
+	userController    controller.UserController    = controller.NewUserController(userService, jwtService)
+	accountController controller.AccountController = controller.NewAccountController(accountService, jwtService)
 )
 
 func main() {
@@ -46,14 +49,15 @@ func main() {
 		userRoutes.PUT("/profile", userController.Update)
 	}
 
-	//bookRoutes := r.Group("api/books", middleware.AuthorizeJWT(jwtService))
-	//{
-	//	bookRoutes.GET("/", bookController.All)
-	//	bookRoutes.POST("/", bookController.Insert)
-	//	bookRoutes.GET("/:id", bookController.FindByID)
-	//	bookRoutes.PUT("/:id", bookController.Update)
-	//	bookRoutes.DELETE("/:id", bookController.Delete)
-	//}
+	accountRoutes := r.Group("api/account", middleware.AuthorizeJWT(jwtService))
+	{
+
+		accountRoutes.GET("/", accountController.All)
+		accountRoutes.POST("/", accountController.Insert)
+		accountRoutes.GET("/:id", accountController.FindByID)
+		accountRoutes.PUT("/:id", accountController.Update)
+		accountRoutes.DELETE("/:id", accountController.Delete)
+	}
 
 	r.Run(":8080")
 }
