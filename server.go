@@ -40,7 +40,7 @@ func main() {
 	authRoutes := r.Group("api/auth")
 	{
 		authRoutes.POST("/login", authController.Login)
-		authRoutes.POST("/register", authController.Register)
+		authRoutes.POST("/register", authController.Register) // Create Client
 	}
 
 	userRoutes := r.Group("api/user", middleware.AuthorizeJWT(jwtService))
@@ -51,10 +51,9 @@ func main() {
 
 	accountRoutes := r.Group("api/account", middleware.AuthorizeJWT(jwtService))
 	{
-
-		accountRoutes.GET("/", accountController.All)
-		accountRoutes.POST("/", accountController.Insert)
-		accountRoutes.GET("/:id", accountController.FindByID)
+		accountRoutes.GET("/", accountController.All)         // Get all Accounts
+		accountRoutes.POST("/", accountController.Insert)     // Create Account for Client
+		accountRoutes.GET("/:id", accountController.FindByID) // Get Account by ID
 		accountRoutes.PUT("/:id", accountController.Update)
 		accountRoutes.DELETE("/:id", accountController.Delete)
 	}

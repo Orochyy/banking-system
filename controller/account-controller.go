@@ -64,16 +64,21 @@ func (c *accountController) Insert(context *gin.Context) {
 		res := helper.BuildErrorResponse("Failed to process request", errDTO.Error(), helper.EmptyObj{})
 		context.JSON(http.StatusBadRequest, res)
 	} else {
-		authHeader := context.GetHeader("Authorization")
-		userID := c.getUserIDByToken(authHeader)
-		convertedUserID, err := strconv.ParseUint(userID, 10, 64)
-		if err == nil {
-			accountCreateDTO.UserID = convertedUserID
+		if accountCreateDTO.Currency != "USD" && accountCreateDTO.Currency != "COP" && accountCreateDTO.Currency != "MXN" {
+			res := helper.BuildErrorResponse("Failed to process request", "Currency not allowed", helper.EmptyObj{})
+			context.JSON(http.StatusBadRequest, res)
+			return
 		}
-		result := c.accountService.Insert(accountCreateDTO)
-		response := helper.BuildResponse(true, "OK", result)
-		context.JSON(http.StatusCreated, response)
 	}
+	authHeader := context.GetHeader("Authorization")
+	userID := c.getUserIDByToken(authHeader)
+	convertedUserID, err := strconv.ParseUint(userID, 10, 64)
+	if err == nil {
+		accountCreateDTO.UserID = convertedUserID
+	}
+	result := c.accountService.Insert(accountCreateDTO)
+	response := helper.BuildResponse(true, "OK", result)
+	context.JSON(http.StatusCreated, response)
 }
 
 func (c *accountController) Update(context *gin.Context) {
@@ -139,16 +144,4 @@ func (c *accountController) getUserIDByToken(token string) string {
 	claims := aToken.Claims.(jwt.MapClaims)
 	id := fmt.Sprintf("%v", claims["user_id"])
 	return id
-}
-
-func (c *accountController) GetAccountsInfo(context *gin.Context) {
-	//authHeader := context.GetHeader("Authorization")
-	//userID := c.getUserIDByToken(authHeader)
-	//convertedUserID, err := strconv.ParseUint(userID, 10, 64)
-	//if err != nil {
-	//	panic(err.Error())
-	//}
-	//var accounts []entity.Account = c.accountService.FindByID(convertedUserID)
-	//res := helper.BuildResponse(true, "OK", accounts)
-	//context.JSON(http.StatusOK, res)
 }

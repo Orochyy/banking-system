@@ -17,6 +17,7 @@ type AccountService interface {
 	All() []entity.Account
 	FindByID(accountID uint64) entity.Account
 	IsAllowedToEdit(userID string, accountID uint64) bool
+	GetCurrency(accountID uint64) string
 }
 
 type accountService struct {
@@ -65,4 +66,9 @@ func (service *accountService) IsAllowedToEdit(userID string, accountID uint64) 
 	b := service.accountRepository.FindAccountByID(accountID)
 	id := fmt.Sprintf("%v", b.UserID)
 	return userID == id
+}
+
+func (service *accountService) GetCurrency(accountID uint64) string {
+	b := service.accountRepository.FindAccountByID(accountID)
+	return b.Currency
 }
