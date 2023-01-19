@@ -2,6 +2,7 @@ package repository
 
 import (
 	"banking-system/entity"
+	"fmt"
 	"gorm.io/gorm"
 )
 
@@ -11,6 +12,11 @@ type AccountRepository interface {
 	DeleteAccount(b entity.Account)
 	AllAccounts() []entity.Account
 	FindAccountByID(accountID uint64) entity.Account
+	UpdateAmountAccountSender(account entity.Account) entity.Account
+	UpdateAmountAccountRecipient(account entity.Account) entity.Account
+	GetHex(accountID uint64) string
+	FindAccountByHex(hex string) entity.Account
+	FindAccountByAmount(amount uint64) []entity.Account
 }
 
 type accountConnection struct {
@@ -49,4 +55,36 @@ func (db *accountConnection) AllAccounts() []entity.Account {
 	var accounts []entity.Account
 	db.connection.Preload("User").Find(&accounts)
 	return accounts
+}
+
+func (db *accountConnection) UpdateAmountAccountSender(account entity.Account) entity.Account {
+	db.connection.Save(&account.Amount)
+	db.connection.Preload("User").Find(&account.Amount).Where("hex = ?", account.Hex)
+	return account
+}
+
+func (db *accountConnection) UpdateAmountAccountRecipient(account entity.Account) entity.Account {
+	db.connection.Save(&account.Amount)
+	db.connection.Preload("User").Find(&account.Amount).Where("hex = ?", account.Hex)
+	return account
+}
+
+func (db *accountConnection) GetHex(accountID uint64) string {
+	var account entity.Account
+	db.connection.Preload("User").Find(&account, accountID)
+	return account.Hex
+}
+
+func (db *accountConnection) FindAccountByHex(hex string) entity.Account {
+	var account entity.Account
+	db.connection.Preload("User").Find(&account).Where("hex = ?", hex)
+	fmt.Println(hex)
+	fmt.Println(account)
+	return account
+}
+
+func (db *accountConnection) FindAccountByAmount(amount uint64) []entity.Account {
+	var account entity.Account
+	db.connection.Preload("User").Find(&account).Where("amount = ?", amount)
+	return []entity.Account{account}
 }

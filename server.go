@@ -13,16 +13,19 @@ import (
 )
 
 var (
-	db                *gorm.DB                     = config.SetupDatabaseConnection()
-	userRepository    repository.UserRepository    = repository.NewUserRepository(db)
-	accountRepository repository.AccountRepository = repository.NewAccountRepository(db)
-	jwtService        service.JWTService           = service.NewJWTService()
-	userService       service.UserService          = service.NewUserService(userRepository)
-	accountService    service.AccountService       = service.NewAccountService(accountRepository)
-	authService       service.AuthService          = service.NewAuthService(userRepository)
-	authController    controller.AuthController    = controller.NewAuthController(authService, jwtService)
-	userController    controller.UserController    = controller.NewUserController(userService, jwtService)
-	accountController controller.AccountController = controller.NewAccountController(accountService, jwtService)
+	db                    *gorm.DB                         = config.SetupDatabaseConnection()
+	userRepository        repository.UserRepository        = repository.NewUserRepository(db)
+	accountRepository     repository.AccountRepository     = repository.NewAccountRepository(db)
+	transactionRepository repository.TransactionRepository = repository.NewTransactionRepository(db)
+	jwtService            service.JWTService               = service.NewJWTService()
+	userService           service.UserService              = service.NewUserService(userRepository)
+	accountService        service.AccountService           = service.NewAccountService(accountRepository)
+	transactionService    service.TransactionService       = service.NewTransactionService(transactionRepository)
+	authService           service.AuthService              = service.NewAuthService(userRepository)
+	authController        controller.AuthController        = controller.NewAuthController(authService, jwtService)
+	userController        controller.UserController        = controller.NewUserController(userService, jwtService)
+	accountController     controller.AccountController     = controller.NewAccountController(accountService, jwtService)
+	transactionController controller.TransactionController = controller.NewTransactionController(transactionService, jwtService)
 )
 
 func main() {
@@ -56,6 +59,12 @@ func main() {
 		accountRoutes.GET("/:id", accountController.FindByID) // Get Account by ID
 		accountRoutes.PUT("/:id", accountController.Update)
 		accountRoutes.DELETE("/:id", accountController.Delete)
+	}
+
+	transactionRoutes := r.Group("api/transaction", middleware.AuthorizeJWT(jwtService))
+	{
+		transactionRoutes.GET("/:id", transactionController.GetAllTransactionByAccountID) // Get all Transactions by Account ID
+		transactionRoutes.POST("/", transactionController.CreateTransaction)              // Create Transaction
 	}
 
 	r.Run(":8080")

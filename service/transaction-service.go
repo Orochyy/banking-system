@@ -9,9 +9,8 @@ import (
 )
 
 type TransactionService interface {
-	Insert(t dto.TransactionCreateDTO) entity.Transaction
-	All() []entity.Transaction
-	FindByID(transactionID uint64) entity.Transaction
+	CreateTransaction(transactionCreateDTO dto.TransactionCreateDTO) entity.Transaction
+	FindAllTransactionsByID(accountID uint64) []entity.Transaction
 }
 
 type transactionService struct {
@@ -24,20 +23,16 @@ func NewTransactionService(transactionRepo repository.TransactionRepository) Tra
 	}
 }
 
-func (service *transactionService) Insert(t dto.TransactionCreateDTO) entity.Transaction {
+func (s *transactionService) CreateTransaction(transactionCreateDTO dto.TransactionCreateDTO) entity.Transaction {
 	transaction := entity.Transaction{}
-	err := smapping.FillStruct(&transaction, smapping.MapFields(&t))
+	err := smapping.FillStruct(&transaction, smapping.MapFields(&transactionCreateDTO))
 	if err != nil {
 		log.Fatalf("Failed map %v: ", err)
 	}
-	res := service.transactionRepository.InsertTransaction(transaction)
+	res := s.transactionRepository.CreateTransaction(transaction)
 	return res
 }
 
-func (service *transactionService) All() []entity.Transaction {
-	return service.transactionRepository.AllTransactions()
-}
-
-func (service *transactionService) FindByID(transactionID uint64) entity.Transaction {
-	return service.transactionRepository.FindTransactionByID(transactionID)
+func (s *transactionService) FindAllTransactionsByID(accountID uint64) []entity.Transaction {
+	return s.transactionRepository.FindAllTransactionsByID(accountID)
 }

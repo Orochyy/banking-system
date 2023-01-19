@@ -70,6 +70,7 @@ func (c *accountController) Insert(context *gin.Context) {
 			return
 		}
 	}
+	accountCreateDTO.Hex = c.accountService.CreateHex()
 	authHeader := context.GetHeader("Authorization")
 	userID := c.getUserIDByToken(authHeader)
 	convertedUserID, err := strconv.ParseUint(userID, 10, 64)
@@ -110,6 +111,20 @@ func (c *accountController) Update(context *gin.Context) {
 		context.JSON(http.StatusForbidden, response)
 	}
 }
+
+//
+//func (c *accountController) GetAccountByHex(context *gin.Context) {
+//	hex := context.GetHeader("hex")
+//	var account entity.Account = c.accountService.FindByHex(hex)
+//	fmt.Println(hex)
+//	if (account == entity.Account{}) {
+//		res := helper.BuildErrorResponse("No account found with given hex", "No data found", helper.EmptyObj{})
+//		context.JSON(http.StatusNotFound, res)
+//	} else {
+//		res := helper.BuildResponse(true, "OK", account)
+//		context.JSON(http.StatusOK, res)
+//	}
+//}
 
 func (c *accountController) Delete(context *gin.Context) {
 	var account entity.Account

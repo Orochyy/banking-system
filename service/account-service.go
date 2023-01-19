@@ -4,6 +4,9 @@ import (
 	"banking-system/dto"
 	"banking-system/entity"
 	"banking-system/repository"
+	"crypto/rand"
+	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"log"
 
@@ -18,6 +21,13 @@ type AccountService interface {
 	FindByID(accountID uint64) entity.Account
 	IsAllowedToEdit(userID string, accountID uint64) bool
 	GetCurrency(accountID uint64) string
+	CreateHex() string
+	UpdateAmountAccountSender(a dto.AccountUpdateAmountDTO) entity.Account
+	UpdateAmountAccountRecipient(a dto.AccountUpdateAmountDTO) entity.Account
+	GetHex(accountID uint64) string
+	FindByHex(hex string) entity.Account
+	ParseString(s string) (string, error)
+	FindAccountByAmount(amount uint64) []entity.Account
 }
 
 type accountService struct {
@@ -71,4 +81,52 @@ func (service *accountService) IsAllowedToEdit(userID string, accountID uint64) 
 func (service *accountService) GetCurrency(accountID uint64) string {
 	b := service.accountRepository.FindAccountByID(accountID)
 	return b.Currency
+}
+
+func (service *accountService) UpdateAmountAccountSender(a dto.AccountUpdateAmountDTO) entity.Account {
+	account := entity.Account{}
+	err := smapping.FillStruct(&account, smapping.MapFields(&a))
+	if err != nil {
+		log.Fatalf("Failed map %v: ", err)
+	}
+	res := service.accountRepository.UpdateAccount(account)
+	return res
+}
+
+func (service *accountService) UpdateAmountAccountRecipient(a dto.AccountUpdateAmountDTO) entity.Account {
+	account := entity.Account{}
+	err := smapping.FillStruct(&account, smapping.MapFields(&a))
+	if err != nil {
+		log.Fatalf("Failed map %v: ", err)
+	}
+	res := service.accountRepository.UpdateAccount(account)
+	return res
+}
+
+func (service *accountService) CreateHex() string {
+	b := make([]byte, 16)
+	rand.Read(b)
+	return hex.EncodeToString(b)
+}
+
+func (service *accountService) GetHex(accountID uint64) string {
+	b := service.accountRepository.FindAccountByID(accountID)
+	return b.Hex
+}
+
+func (service *accountService) FindByHex(hex string) entity.Account {
+	return service.accountRepository.FindAccountByHex(hex)
+}
+
+func (service *accountService) FindAccountByAmount(amount uint64) []entity.Account {
+	return service.accountRepository.FindAccountByAmount(amount)
+}
+
+func (service *accountService) ParseString(s string) (string, error) {
+	var result string
+	err := json.Unmarshal([]byte(s), &result)
+	if err != nil {
+		return "", err
+	}
+	return result, nil
 }
