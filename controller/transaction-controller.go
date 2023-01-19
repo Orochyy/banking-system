@@ -47,6 +47,12 @@ func (c *transactionController) CreateTransaction(context *gin.Context) {
 		transactionCreateDTO.UserID = convertedUserID
 	}
 
+	if transactionCreateDTO.Type != "withdraw" && transactionCreateDTO.Type != "deposit" {
+		res := helper.BuildErrorResponse("Failed to process request", "Invalid transaction type", helper.EmptyObj{})
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
 	currencyAccountFrom := c.accountService.GetCurrency(transactionCreateDTO.AccountSender)
 	currencyAccountTo := c.accountService.GetCurrency(transactionCreateDTO.AccountRecipient)
 
