@@ -16,7 +16,6 @@ type AccountRepository interface {
 	UpdateAmountAccountRecipient(account entity.Account) entity.Account
 	GetHex(accountID uint64) string
 	FindAccountByHex(hex string) entity.Account
-	FindAccountByAmount(amount uint64) []entity.Account
 }
 
 type accountConnection struct {
@@ -77,14 +76,14 @@ func (db *accountConnection) GetHex(accountID uint64) string {
 
 func (db *accountConnection) FindAccountByHex(hex string) entity.Account {
 	var account entity.Account
-	db.connection.Preload("User").Find(&account).Where("hex = ?", hex)
+	db.connection.Where("hex = ?", hex).Find(&account)
 	fmt.Println(hex)
 	fmt.Println(account)
 	return account
 }
 
-func (db *accountConnection) FindAccountByAmount(amount uint64) []entity.Account {
-	var account entity.Account
-	db.connection.Preload("User").Find(&account).Where("amount = ?", amount)
-	return []entity.Account{account}
-}
+//func (db *accountConnection) FindAccountByAmount(amount uint64) []entity.Account {
+//	var account entity.Account
+//	db.connection.First().Find(&account).Where("amount = ?", amount)
+//	return []entity.Account{account}
+//}

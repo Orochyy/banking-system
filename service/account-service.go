@@ -27,7 +27,6 @@ type AccountService interface {
 	GetHex(accountID uint64) string
 	FindByHex(hex string) entity.Account
 	ParseString(s string) (string, error)
-	FindAccountByAmount(amount uint64) []entity.Account
 }
 
 type accountService struct {
@@ -116,10 +115,6 @@ func (service *accountService) GetHex(accountID uint64) string {
 
 func (service *accountService) FindByHex(hex string) entity.Account {
 	return service.accountRepository.FindAccountByHex(hex)
-}
-
-func (service *accountService) FindAccountByAmount(amount uint64) []entity.Account {
-	return service.accountRepository.FindAccountByAmount(amount)
 }
 
 func (service *accountService) ParseString(s string) (string, error) {

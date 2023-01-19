@@ -19,6 +19,7 @@ type AccountController interface {
 	Insert(context *gin.Context)
 	Update(context *gin.Context)
 	Delete(context *gin.Context)
+	GetAccountByHex(context *gin.Context)
 }
 
 type accountController struct {
@@ -112,19 +113,18 @@ func (c *accountController) Update(context *gin.Context) {
 	}
 }
 
-//
-//func (c *accountController) GetAccountByHex(context *gin.Context) {
-//	hex := context.GetHeader("hex")
-//	var account entity.Account = c.accountService.FindByHex(hex)
-//	fmt.Println(hex)
-//	if (account == entity.Account{}) {
-//		res := helper.BuildErrorResponse("No account found with given hex", "No data found", helper.EmptyObj{})
-//		context.JSON(http.StatusNotFound, res)
-//	} else {
-//		res := helper.BuildResponse(true, "OK", account)
-//		context.JSON(http.StatusOK, res)
-//	}
-//}
+func (c *accountController) GetAccountByHex(context *gin.Context) {
+	hex := context.GetHeader("hex")
+	var account entity.Account = c.accountService.FindByHex(hex)
+	fmt.Println(hex)
+	if (account == entity.Account{}) {
+		res := helper.BuildErrorResponse("No account found with given hex", "No data found", helper.EmptyObj{})
+		context.JSON(http.StatusNotFound, res)
+	} else {
+		res := helper.BuildResponse(true, "OK", account)
+		context.JSON(http.StatusOK, res)
+	}
+}
 
 func (c *accountController) Delete(context *gin.Context) {
 	var account entity.Account
