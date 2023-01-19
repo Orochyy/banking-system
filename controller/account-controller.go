@@ -20,6 +20,7 @@ type AccountController interface {
 	Update(context *gin.Context)
 	Delete(context *gin.Context)
 	GetAccountByHex(context *gin.Context)
+	GetHexByID(context *gin.Context)
 }
 
 type accountController struct {
@@ -116,7 +117,6 @@ func (c *accountController) Update(context *gin.Context) {
 func (c *accountController) GetAccountByHex(context *gin.Context) {
 	hex := context.GetHeader("hex")
 	var account entity.Account = c.accountService.FindByHex(hex)
-	fmt.Println(hex)
 	if (account == entity.Account{}) {
 		res := helper.BuildErrorResponse("No account found with given hex", "No data found", helper.EmptyObj{})
 		context.JSON(http.StatusNotFound, res)
@@ -148,6 +148,24 @@ func (c *accountController) Delete(context *gin.Context) {
 	} else {
 		response := helper.BuildErrorResponse("You dont have permission", "You are not the owner", helper.EmptyObj{})
 		context.JSON(http.StatusForbidden, response)
+	}
+}
+
+func (c *accountController) GetHexByID(context *gin.Context) {
+	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
+	if err != nil {
+		res := helper.BuildErrorResponse("No param id was found", err.Error(), helper.EmptyObj{})
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	var account entity.Account = c.accountService.FindByID(id)
+	if (account == entity.Account{}) {
+		res := helper.BuildErrorResponse("No account found with given id", "No data found", helper.EmptyObj{})
+		context.JSON(http.StatusNotFound, res)
+	} else {
+		res := helper.BuildResponse(true, "OK", account.Hex)
+		context.JSON(http.StatusOK, res)
 	}
 }
 

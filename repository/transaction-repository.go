@@ -28,7 +28,6 @@ func (db *transactionConnection) CreateTransaction(transaction entity.Transactio
 
 func (db *transactionConnection) FindAllTransactionsByID(accountID uint64) []entity.Transaction {
 	var transactions []entity.Transaction
-	db.connection.Preload("AccountSender").Where("account_sender = ?", accountID).Find(&transactions)
-
+	db.connection.Preload("User").Where("account_sender = ?", accountID).Find(&transactions)
 	return transactions
 }

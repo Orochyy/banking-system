@@ -23,18 +23,13 @@ type transactionController struct {
 	jwtService         service.JWTService
 }
 
-func NewTransactionController(transactionService service.TransactionService, jwtServ service.JWTService) TransactionController {
+func NewTransactionController(transactionService service.TransactionService, accountService service.AccountService, jwtServ service.JWTService) TransactionController {
 	return &transactionController{
 		transactionService: transactionService,
+		accountService:     accountService,
 		jwtService:         jwtServ,
 	}
 }
-
-const (
-	USD = "USD"
-	COP = "COP"
-	MNX = "MXN"
-)
 
 func (c *transactionController) CreateTransaction(context *gin.Context) {
 	var transactionCreateDTO dto.TransactionCreateDTO
@@ -52,20 +47,14 @@ func (c *transactionController) CreateTransaction(context *gin.Context) {
 		transactionCreateDTO.UserID = convertedUserID
 	}
 
-	if transactionCreateDTO.Currency != USD && transactionCreateDTO.Currency != COP && transactionCreateDTO.Currency != MNX {
+	currencyAccountFrom := c.accountService.GetCurrency(transactionCreateDTO.AccountSender)
+	currencyAccountTo := c.accountService.GetCurrency(transactionCreateDTO.AccountRecipient)
+
+	if currencyAccountFrom != currencyAccountTo {
 		res := helper.BuildErrorResponse("Currency not supported", "Currency not supported", helper.EmptyObj{})
 		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-
-	//currencyAccountFrom := c.accountService.GetCurrency(transactionCreateDTO.AccountSender)
-	//currencyAccountTo := c.accountService.GetCurrency(transactionCreateDTO.AccountRecipient)
-	//
-	//if currencyAccountFrom != transactionCreateDTO.Currency && currencyAccountTo != transactionCreateDTO.Currency {
-	//	res := helper.BuildErrorResponse("Currency not supported", "Currency not supported", helper.EmptyObj{})
-	//	context.AbortWithStatusJSON(http.StatusBadRequest, res)
-	//	return
-	//}
 
 	res := c.transactionService.CreateTransaction(transactionCreateDTO)
 
@@ -74,36 +63,30 @@ func (c *transactionController) CreateTransaction(context *gin.Context) {
 		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	//hexSender := c.accountService.GetHex(transactionCreateDTO.AccountSender)
-	//hexRecipient := c.accountService.GetHex(transactionCreateDTO.AccountRecipient)
 
-	//if hexSender == "" || hexRecipient == "" {
-	//	res := helper.BuildErrorResponse("Failed to process request", "Invalid account", helper.EmptyObj{})
-	//	context.AbortWithStatusJSON(http.StatusBadRequest, res)
-	//	return
-	//}
-	//
-	//accountAmountSender := c.accountService.FindByHex(hexSender).Amount
-	//accountAmountRecipient := c.accountService.FindByHex(hexRecipient).Amount
+	hexSender := c.accountService.GetHex(transactionCreateDTO.AccountSender)
+	hexRecipient := c.accountService.GetHex(transactionCreateDTO.AccountRecipient)
 
-	//if accountAmountSender < accountAmountRecipient {
-	//	res := helper.BuildErrorResponse("Failed to process request", "Insufficient funds", helper.EmptyObj{})
-	//	context.AbortWithStatusJSON(http.StatusBadRequest, res)
-	//	return
-	//}
+	if hexSender == "" || hexRecipient == "" {
+		res := helper.BuildErrorResponse("Failed to process request", "Invalid account", helper.EmptyObj{})
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
 
-	//endAmountSender := accountAmountSender - transactionCreateDTO.Amount
-	//endAmountRecipient := accountAmountRecipient + transactionCreateDTO.Amount
-	//
-	//accountRecipient := dto.AccountUpdateAmountDTO{
-	//	Amount: endAmountSender,
-	//}
-	//accountSender := dto.AccountUpdateAmountDTO{
-	//	Amount: endAmountRecipient,
-	//}
+	accountSender := c.accountService.FindByHex(hexSender)
+	accountRecipient := c.accountService.FindByHex(hexRecipient)
 
-	//c.accountService.UpdateAmountAccountRecipient(accountRecipient)
-	//c.accountService.UpdateAmountAccountSender(accountSender)
+	if accountSender.Amount < transactionCreateDTO.Amount {
+		res := helper.BuildErrorResponse("Failed to process request", "Insufficient funds", helper.EmptyObj{})
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	accountSender.Amount = accountSender.Amount - transactionCreateDTO.Amount
+	accountRecipient.Amount = accountRecipient.Amount + transactionCreateDTO.Amount
+
+	c.accountService.UpdateAmountAccount(accountSender)
+	c.accountService.UpdateAmountAccount(accountRecipient)
 
 	response := helper.BuildResponse(true, "OK", res)
 	context.JSON(http.StatusCreated, response)

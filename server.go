@@ -25,7 +25,7 @@ var (
 	authController        controller.AuthController        = controller.NewAuthController(authService, jwtService)
 	userController        controller.UserController        = controller.NewUserController(userService, jwtService)
 	accountController     controller.AccountController     = controller.NewAccountController(accountService, jwtService)
-	transactionController controller.TransactionController = controller.NewTransactionController(transactionService, jwtService)
+	transactionController controller.TransactionController = controller.NewTransactionController(transactionService, accountService, jwtService)
 )
 
 func main() {
@@ -60,6 +60,7 @@ func main() {
 		accountRoutes.PUT("/:id", accountController.Update)
 		accountRoutes.DELETE("/:id", accountController.Delete)
 		accountRoutes.GET("/hex", accountController.GetAccountByHex)
+		accountRoutes.GET("/hex/:id", accountController.GetHexByID)
 	}
 
 	transactionRoutes := r.Group("api/transaction", middleware.AuthorizeJWT(jwtService))

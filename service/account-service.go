@@ -22,8 +22,7 @@ type AccountService interface {
 	IsAllowedToEdit(userID string, accountID uint64) bool
 	GetCurrency(accountID uint64) string
 	CreateHex() string
-	UpdateAmountAccountSender(a dto.AccountUpdateAmountDTO) entity.Account
-	UpdateAmountAccountRecipient(a dto.AccountUpdateAmountDTO) entity.Account
+	UpdateAmountAccount(a entity.Account) entity.Account
 	GetHex(accountID uint64) string
 	FindByHex(hex string) entity.Account
 	ParseString(s string) (string, error)
@@ -82,23 +81,14 @@ func (service *accountService) GetCurrency(accountID uint64) string {
 	return b.Currency
 }
 
-func (service *accountService) UpdateAmountAccountSender(a dto.AccountUpdateAmountDTO) entity.Account {
+func (service *accountService) UpdateAmountAccount(a entity.Account) entity.Account {
 	account := entity.Account{}
 	err := smapping.FillStruct(&account, smapping.MapFields(&a))
 	if err != nil {
 		log.Fatalf("Failed map %v: ", err)
 	}
 	res := service.accountRepository.UpdateAccount(account)
-	return res
-}
 
-func (service *accountService) UpdateAmountAccountRecipient(a dto.AccountUpdateAmountDTO) entity.Account {
-	account := entity.Account{}
-	err := smapping.FillStruct(&account, smapping.MapFields(&a))
-	if err != nil {
-		log.Fatalf("Failed map %v: ", err)
-	}
-	res := service.accountRepository.UpdateAccount(account)
 	return res
 }
 
