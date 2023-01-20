@@ -47,7 +47,7 @@ func (c *transactionController) CreateTransaction(context *gin.Context) {
 		transactionCreateDTO.UserID = convertedUserID
 	}
 
-	if transactionCreateDTO.Type != "withdraw" && transactionCreateDTO.Type != "deposit" {
+	if transactionCreateDTO.Type != "withdraw" && transactionCreateDTO.Type != "deposit" && transactionCreateDTO.Type != "transfer" {
 		res := helper.BuildErrorResponse("Failed to process request", "Invalid transaction type", helper.EmptyObj{})
 		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
@@ -87,7 +87,6 @@ func (c *transactionController) CreateTransaction(context *gin.Context) {
 		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-
 	accountSender.Amount = accountSender.Amount - transactionCreateDTO.Amount
 	accountRecipient.Amount = accountRecipient.Amount + transactionCreateDTO.Amount
 
