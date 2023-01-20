@@ -59,8 +59,6 @@ func main() {
 		accountRoutes.GET("/:id", accountController.FindByID) // Get Account by ID
 		accountRoutes.PUT("/:id", accountController.Update)
 		accountRoutes.DELETE("/:id", accountController.Delete)
-		accountRoutes.GET("/hex", accountController.GetAccountByHex)
-		accountRoutes.GET("/hex/:id", accountController.GetHexByID)
 	}
 
 	transactionRoutes := r.Group("api/transaction", middleware.AuthorizeJWT(jwtService))
