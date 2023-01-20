@@ -30,6 +30,8 @@ Method GET```localhost:8080/api/user/profile```
 # -> create account
 
 Method POST ```localhost:8080/api/account```
+
+### For create account need send next parameters
 Example:
 ```
     currency:   MXN
@@ -42,8 +44,9 @@ Method GET ```localhost:8080/api/account/:id```
 
 # -> create transaction
 
-Method POST ```localhost:8080/api/transaction/```
+Method POST ```localhost:8080/api/transaction```
 
+### For create transaction need send next parameters
 Example:
 ```
     AccountSender:          {account:id}
