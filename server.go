@@ -16,16 +16,19 @@ var (
 	db                    *gorm.DB                         = config.SetupDatabaseConnection()
 	userRepository        repository.UserRepository        = repository.NewUserRepository(db)
 	accountRepository     repository.AccountRepository     = repository.NewAccountRepository(db)
+	managerRepository     repository.ManagerRepository     = repository.NewManagerRepository(db)
 	transactionRepository repository.TransactionRepository = repository.NewTransactionRepository(db)
 	jwtService            service.JWTService               = service.NewJWTService()
 	userService           service.UserService              = service.NewUserService(userRepository)
 	accountService        service.AccountService           = service.NewAccountService(accountRepository)
+	managerService        service.ManagerService           = service.NewManagerService(managerRepository)
 	transactionService    service.TransactionService       = service.NewTransactionService(transactionRepository)
 	authService           service.AuthService              = service.NewAuthService(userRepository)
 	authController        controller.AuthController        = controller.NewAuthController(authService, jwtService)
 	userController        controller.UserController        = controller.NewUserController(userService, jwtService)
 	accountController     controller.AccountController     = controller.NewAccountController(accountService, jwtService)
 	transactionController controller.TransactionController = controller.NewTransactionController(transactionService, accountService, jwtService)
+	managerController     controller.ManagerController     = controller.NewManagerController(managerService, jwtService)
 )
 
 func main() {
@@ -59,6 +62,14 @@ func main() {
 		accountRoutes.GET("/:id", accountController.FindByID) // Get Account by ID
 		accountRoutes.PUT("/:id", accountController.Update)
 		accountRoutes.DELETE("/:id", accountController.Delete)
+	}
+
+	passwordManagerRoutes := r.Group("api/manager", middleware.AuthorizeJWT(jwtService))
+	{
+		passwordManagerRoutes.GET("/", managerController.All)
+		passwordManagerRoutes.POST("/", managerController.Insert)
+		passwordManagerRoutes.PUT("/:id", managerController.Update)
+		passwordManagerRoutes.DELETE("/:id", managerController.Delete)
 	}
 
 	transactionRoutes := r.Group("api/transaction", middleware.AuthorizeJWT(jwtService))

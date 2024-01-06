@@ -2,6 +2,7 @@ package repository
 
 import (
 	"banking-system/entity"
+	"fmt"
 	"log"
 
 	"golang.org/x/crypto/bcrypt"
@@ -78,5 +79,6 @@ func hashAndSalt(pwd []byte) string {
 		log.Println(err)
 		panic("Failed to hash a password")
 	}
+	fmt.Print("hash1:", hash)
 	return string(hash)
 }
